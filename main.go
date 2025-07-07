@@ -6,6 +6,7 @@ import (
 
 	"github.com/nobelk/go-design-patterns/generator"
 	"github.com/nobelk/go-design-patterns/pipeline"
+	"github.com/nobelk/go-design-patterns/workerpool"
 )
 
 var wg sync.WaitGroup
@@ -20,5 +21,19 @@ func main() {
 	ch := pipeline.DisplayData(pipeline.PrepareData(pipeline.GenerateData()))
 	for data := range ch {
 		fmt.Printf("Items: %+v\n", data)
+	}
+
+	fmt.Println("\n===Worker Pool Pattern===\n")
+	jobs := make(chan workerpool.Job, 10)
+	results := make(chan workerpool.Result, 10)
+	numWorkers := 5
+	noOfJobs := 10
+
+	go workerpool.CreateWorkerPool(numWorkers, jobs, results)
+	go workerpool.Allocate(noOfJobs, jobs)
+
+	for i := 0; i < noOfJobs; i++ {
+		result := <-results
+		fmt.Printf("Job id %d, sum of digits %d, worker id %d\n", result.Job.Id, result.Job.RandomNumber, result.SumOfDigits, result.WorkerId)
 	}
 }
