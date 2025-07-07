@@ -8,8 +8,14 @@
 *.so
 *.dylib
 
+# Binary
+go-design-patterns
+
 # Test binary, built with `go test -c`
 *.test
+
+# Idea
+.idea/
 
 # Code coverage profiles and other test artifacts
 *.out
