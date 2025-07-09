@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/nobelk/go-design-patterns/fanin"
 	"github.com/nobelk/go-design-patterns/generator"
 	"github.com/nobelk/go-design-patterns/pipeline"
+	"github.com/nobelk/go-design-patterns/producerconsumer"
 	"github.com/nobelk/go-design-patterns/workerpool"
 )
 
@@ -35,5 +37,41 @@ func main() {
 	for i := 0; i < noOfJobs; i++ {
 		result := <-results
 		fmt.Printf("Job id %d, sum of digits %d, worker id %d\n", result.Job.Id, result.Job.RandomNumber, result.SumOfDigits, result.WorkerId)
+	}
+
+	fmt.Println("\n===Fanin Pool Pattern===\n")
+	ch1, err := fanin.ReadFile("file1.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+	ch2, err := fanin.ReadFile("file2.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+	ch3, err := fanin.ReadFile("file3.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	channel := fanin.Merge(ch1, ch2, ch3)
+
+	for val := range channel {
+		fmt.Println("Original number: %v Reversed number: %v",
+			val.Original, val.Reverse)
+	}
+
+	fmt.Println("\n===Single Producer Single Consumer Pattern===\n")
+	data := make(chan int)
+	// producer
+	go func() {
+		defer close(data)
+		for i := 0; i < 100; i++ {
+			data <- producerconsumer.Increment(i)
+		}
+	}()
+
+	// consumer
+	for i := range data {
+		fmt.Printf("Value of i: %d\n", i)
 	}
 }
