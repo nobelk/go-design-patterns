@@ -3,6 +3,7 @@ package fanin
 import (
 	"bufio"
 	"fmt"
+	"github.com/nobelk/go-design-patterns/producerconsumer"
 	"io"
 	"os"
 	"strconv"
@@ -73,4 +74,41 @@ func Merge(cs ...<-chan int) <-chan Number {
 		close(out)
 	}()
 	return out
+}
+
+func RunFanin() {
+	ch1, err := ReadFile("file1.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+	ch2, err := ReadFile("file2.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+	ch3, err := ReadFile("file3.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	channel := Merge(ch1, ch2, ch3)
+
+	for val := range channel {
+		fmt.Println("Original number: %v Reversed number: %v",
+			val.Original, val.Reverse)
+	}
+
+	fmt.Println("\n===Single Producer Single Consumer Pattern===\n")
+	data := make(chan int)
+	// producer
+	go func() {
+		defer close(data)
+		for i := 0; i < 100; i++ {
+			data <- producerconsumer.Increment(i)
+		}
+	}()
+
+	// consumer
+	for i := range data {
+		fmt.Printf("Value of i: %d\n", i)
+	}
 }

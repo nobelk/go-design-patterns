@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"github.com/nobelk/go-design-patterns/fanin"
 	"sync"
 
-	"github.com/nobelk/go-design-patterns/fanin"
+	"github.com/nobelk/go-design-patterns/fanout"
 	"github.com/nobelk/go-design-patterns/generator"
 	"github.com/nobelk/go-design-patterns/pipeline"
 	"github.com/nobelk/go-design-patterns/producerconsumer"
+	"github.com/nobelk/go-design-patterns/timeoutusingselect"
 	"github.com/nobelk/go-design-patterns/workerpool"
 )
 
@@ -40,38 +42,20 @@ func main() {
 	}
 
 	fmt.Println("\n===Fanin Pool Pattern===\n")
-	ch1, err := fanin.ReadFile("file1.txt")
-	if err != nil {
-		fmt.Println(err)
-	}
-	ch2, err := fanin.ReadFile("file2.txt")
-	if err != nil {
-		fmt.Println(err)
-	}
-	ch3, err := fanin.ReadFile("file3.txt")
-	if err != nil {
-		fmt.Println(err)
-	}
+	fanin.RunFanin()
 
-	channel := fanin.Merge(ch1, ch2, ch3)
+	fmt.Println("\n===Fanout Pool Pattern===\n")
+	fanout.RunFanout()
 
-	for val := range channel {
-		fmt.Println("Original number: %v Reversed number: %v",
-			val.Original, val.Reverse)
-	}
+	fmt.Println("\n===Multiple Producer Multiple Consumer Pattern===\n")
+	producerconsumer.RunMultiProducerMultiConsumer()
 
-	fmt.Println("\n===Single Producer Single Consumer Pattern===\n")
-	data := make(chan int)
-	// producer
-	go func() {
-		defer close(data)
-		for i := 0; i < 100; i++ {
-			data <- producerconsumer.Increment(i)
-		}
-	}()
+	fmt.Println("\n===Multiple Producer Single Consumer Pattern===\n")
+	producerconsumer.RunMultipleProducerSingleConsumer()
 
-	// consumer
-	for i := range data {
-		fmt.Printf("Value of i: %d\n", i)
-	}
+	fmt.Println("\n===Single Producer Multiple Consumer Pattern===\n")
+	producerconsumer.RunSingleProducerMultiConsumer()
+
+	fmt.Println("\n===Timeout Using Select===\n")
+	timeoutusingselect.RunTimeoutUsingSelect()
 }
